@@ -1,9 +1,7 @@
 package com.example.demo;
 
 import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
+import com.mongodb.Mongo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -11,21 +9,17 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 
 public class PojoSettings {
 
-    @Value("mongodb://localhost:27017/pojo-database")
+    @Value("localhost:27017")
     private String appMongoUri;
 
     @Bean
-    public MongoClient appsMongoClient() {
-        ConnectionString connectionString = new ConnectionString(appMongoUri);
-        MongoClientSettings mongoClientSettings = MongoClientSettings.builder()
-                .applyConnectionString(connectionString)
-                .build();
-        return MongoClients.create(mongoClientSettings);
+    public Mongo appsMongoClient() {
+        return new Mongo(appMongoUri);
     }
 
     @Bean
     public MongoTemplate appsMongoTemplate(
-            @Autowired MongoClient appsMongoClient) {
+            @Autowired Mongo appsMongoClient) {
         return new MongoTemplate(appsMongoClient,"pojo-database");
     }
 

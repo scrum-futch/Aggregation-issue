@@ -1,31 +1,21 @@
 package service;
 
-import com.example.demo.DemoApplication;
-import com.mongodb.client.model.Accumulators;
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Projections;
+import com.mongodb.DBObject;
 import model.Pojo;
 import model.PojoHeader;
 import model.PojoLine;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
-import org.springframework.data.mongodb.core.aggregation.AggregationPipeline;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.util.CloseableIterator;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class PojoService {
@@ -52,20 +42,20 @@ public class PojoService {
         pojo.setId("1");
         appsMongoTemplate.save(pojo);
         List<AggregationOperation> pipeline = Arrays.asList(
-                Aggregation.match(new Criteria("lines.status").is("Delete")
+                Aggregation.match(new Criteria("lines.status").is("Deleted")
                         .and("header.name").is("Test")),
                 Aggregation.unwind("$lines"),
-                Aggregation.match(new Criteria("lines.status").is("Delete")
+                Aggregation.match(new Criteria("lines.status").is("Deleted")
                         .and("header.name").is("Test"))
         );
+        Aggregation agg = Aggregation.newAggregation(pipeline);
         TypedAggregation<Pojo> aggregation = Aggregation.newAggregation(Pojo.class, pipeline);
         LOGGER.info("----Check the pipeline log after this-----");
-        try (CloseableIterator<Document> cursor = appsMongoTemplate.aggregateStream(aggregation,Document.class)) {
-            while (cursor.hasNext() ) {
-                Document result = cursor.next();
+        AggregationResults<DBObject> results = appsMongoTemplate.aggregate(agg,Pojo.class, DBObject.class);
+        Iterator cursor = results.iterator();
+        while (cursor.hasNext() ) {
+                DBObject result = (DBObject) cursor.next();
                 System.out.println(result);
             }
-        }
     }
-
 }
