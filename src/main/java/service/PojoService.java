@@ -52,10 +52,10 @@ public class PojoService {
         pojo.setId("1");
         appsMongoTemplate.save(pojo);
         List<AggregationOperation> pipeline = Arrays.asList(
-                Aggregation.match(new Criteria("lines.status").is("Delete")
+                Aggregation.match(new Criteria("lines.status").is("Deleted")
                         .and("header.name").is("Test")),
                 Aggregation.unwind("$lines"),
-                Aggregation.match(new Criteria("lines.status").is("Delete")
+                Aggregation.match(new Criteria("lines.status").is("Deleted")
                         .and("header.name").is("Test"))
         );
         TypedAggregation<Pojo> aggregation = Aggregation.newAggregation(Pojo.class, pipeline);
